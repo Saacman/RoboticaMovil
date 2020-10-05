@@ -26,19 +26,19 @@ def braitenberg(clientID, usensor):
     Braitenberg algorithm for the front sensors of the pioneer 3dx
     """
     for i in range(len(usensor)):
-        avoid = False
         err, state, point, detectedObj, detectedSurfNormVec = vrep.simxReadProximitySensor(clientID, usensor[i], vrep.simx_opmode_buffer)
         distance = np.linalg.norm(point)
         # if a detection occurs
         if state and (distance < noDetectDist): # don't care about distant objects
-            avoid = True
             distance = max(distance, maxDist) 
             detectW[i] = 1 - ((distance - maxDist) / (noDetectDist - maxDist)) # Normalize the weight
         else:
             detectW[i] = 0
-            avoid = False
-    vLeft = v0 + np.sum(braitenbergL * detectW)
-    vRight = v0 + np.sum(braitenbergR * detectW)
+    dL = np.sum(braitenbergL * detectW)
+    dR = np.sum(braitenbergR * detectW)
+    vLeft = v0 + dL
+    vRight = v0 + dR
+    avoid = True if (dL + dR) else False
     return avoid, vLeft, vRight
 
 def transfB2A(rotAngle, B_ACoords):
@@ -68,6 +68,9 @@ def angdiff(t1, t2):
     return m.copysign(angmag, angdir)
 
 def continuosControl(clientID, robot, goal):
+    """
+    Provide control for the piooner 3dx given a goal
+    """
     xd = goal[0]
     yd = goal[1]
     ret, pos = vrep.simxGetObjectPosition(clientID, robot, -1, vrep.simx_opmode_blocking)
