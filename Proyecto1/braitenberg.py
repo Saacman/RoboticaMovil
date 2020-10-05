@@ -36,7 +36,7 @@ detectW = np.zeros(16)
 braitenbergL = np.array([-0.2,-0.4,-0.6,-0.8,-1,-1.2,-1.4,-1.6, 0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0])
 braitenbergR = np.array([-1.6,-1.4,-1.2,-1,-0.8,-0.6,-0.4,-0.2, 0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0])
 v0=4
-t = time.time()
+
 
 while True:
     # Poll the sensors
@@ -49,8 +49,6 @@ while True:
             detectW[i] = 1 - ((distance - maxDist) / (noDetectDist - maxDist)) # Normalize the weight
         else:
             detectW[i] = 0
-        
-    
     vLeft = v0 + np.sum(braitenbergL * detectW)
     vRight = v0 + np.sum(braitenbergR * detectW)
 
