@@ -13,10 +13,13 @@ braitenbergL = np.array([-0.2,-0.4,-0.6,-0.8,-1,-1.2,-1.4,-1.6, 0.0,0.0,0.0,0.0,
 braitenbergR = np.array([-1.6,-1.4,-1.2,-1,-0.8,-0.6,-0.4,-0.2, 0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0])
 v0 = 4
 #<-----------------------------------Control----------------------------------------->
-
+# Controller gains (linear and heading)
+Kv = 0.5
+Kh = 2.5
+hd = 0
+r = 0.5*0.195
+L = 0.311
 #<----------------------------------Functions---------------------------------------->
-
-
 
 def braitenberg(clientID, usensor):
     """
@@ -45,17 +48,12 @@ def transfB2A(rotAngle, B_ACoords):
     T = np.array([[np.cos(rotAngle) , np.sin(rotAngle), float(B_ACoords[0])],
                   [-np.sin(rotAngle), np.cos(rotAngle), float(B_ACoords[1])],
                   [                0,                0,           1]])
-
     return T
 
-def splinePath(goalsX, goalsY):
+def splinePath(x, y):
     """
     Generate a function of the path that matches the goals
     """
-    # x = np.insert(goalsX, 0, position[0])
-    # y = np.insert(goalsY, 0, position[1])
-    x = goalsX
-    y = goalsY
     f = interp1d(x, y, kind='cubic')
     return f
 
@@ -69,19 +67,15 @@ def angdiff(t1, t2):
     angdir = m.cos(t1)*m.sin(t2)-m.sin(t1)*m.cos(t2)
     return m.copysign(angmag, angdir)
 
-def continuosControl(pos, orien, goal):
-    # Controller gains (linear and heading)
-    Kv = 0.5
-    Kh = 2.5
+def continuosControl(clientID, robot, goal):
     xd = goal[0]
     yd = goal[1]
-    hd = 0
-    r = 0.5*0.195
-    L = 0.311
+    ret, pos = vrep.simxGetObjectPosition(clientID, robot, -1, vrep.simx_opmode_blocking)
+    ret, rot = vrep.simxGetObjectOrientation(clientID, robot, -1, vrep.simx_opmode_blocking)
+
     errp = m.sqrt((xd-pos[0])**2 + (yd-pos[1])**2)
     angd = m.atan2(yd-pos[1], xd-pos[0])
-    errh = angdiff(orien[2], angd)
-    # Continuous control
+    errh = angdiff(rot[2], angd)
     v = Kv*errp
     omega = Kh*errh
     ul = v/r - L*omega/(2*r)

@@ -32,23 +32,24 @@ for i in range(16):
 
 
 #<-----------------------------------Control----------------------------------------->
-errgoal = 10
+
 # goals = np.array([[-7.5, -7.5], [-6.5,  0.5], [-5.5, -3.5], [-4.5, 1.5], [-0.5, -6.5], [ 1.5, -4.5],
 #  [ 2.5, -0.5], [ 3.5, -1.5], [ 6.5, -4.5], [ 9.5, -7.5], [11.5, -4.5]])
-goals = np.array([[-6.5,  0.5], [-5.5, -3.5], [-4.5, 1.5], [-0.5, -6.5], [ 1.5, -4.5],
- [ 2.5, -0.5], [ 3.5, -1.5], [ 6.5, -4.5], [ 9.5, -7.5], [11.5, -4.5]])
-path = pc.splinePath(goals[:,0], goals[:,1])
-points = np.linspace(min(goals[:,0]), max(goals[:,0]), num=100, endpoint=True)
+#goals = np.array([[-6.5,  0.5], [-5.5, -3.5], [-4.5, 1.5], [-0.5, -6.5], [ 1.5, -4.5],
+# [ 2.5, -0.5], [ 3.5, -1.5], [ 6.5, -4.5], [ 9.5, -7.5], [11.5, -4.5]])
+goals = [(1.5, 1.5), (1.5, -1.5), (-1.5, -1.5), (-1.5, 1.5), (0,0)]
+#path = pc.splinePath(goals[:,0], goals[:,1])
+#points = np.linspace(min(goals[:,0]), max(goals[:,0]), num=100, endpoint=True)
 
 for goal in goals:
-    while errgoal > 0.3:
-        
-        avoid, ul, ur = pc.braitenberg(clientID, usensor)
+    errp = 10
+    while errp > 0.1:
+        errp, ul, ur = pc.continuosControl(clientID, robot, goal)
+        #avoid, ul, ur = pc.braitenberg(clientID, usensor)
 
         errf = vrep.simxSetJointTargetVelocity(clientID, motorL, ul, vrep.simx_opmode_streaming)
         errf = vrep.simxSetJointTargetVelocity(clientID, motorR, ur, vrep.simx_opmode_streaming)
-    # Remove reached goals
-    goals = np.delete(goals, 0, axis=0)
+
 
 
 vrep.simxStopSimulation(clientID, vrep.simx_opmode_oneshot)
