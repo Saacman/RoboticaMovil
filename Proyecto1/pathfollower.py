@@ -33,7 +33,7 @@ for i in range(16):
 
 
 #<-----------------------------------Control----------------------------------------->
-goals = [(-6.0,  0.5), (-5.5, -3.5), (-4.5, 1.5), (-0.5, -6.5), (1.5, -4.5), (2.5, -0.5), (3.5, -1.5), (6.5, -4.5), (9.5, -5.5), (11.5, -4.5)]
+goals = [(-6.0,  0.5), (-5.5, -3.5), (-4.5, 1.5), (-0.5, -6.5), (1.5, -4.5), (2.5, -0.5), (3.5, -1.5), (6.5, -4.5)]#, (9.5, -5.5)] #(11.5, -4.5)
 p = np.array(goals)
 path = pc.splinePath(p[:,0], p[:,1])
 pointsx = np.linspace(min(p[:,0]), max(p[:,0]), num=60, endpoint=True)
@@ -43,7 +43,7 @@ plt.show()
 step = 0
 errp = 10
 achieved = 0
-while step < len(pointsx):
+while step < len(pointsx) and achieved < len(goals):
     # Traverse the path
     step = step + 1 if errp < 0.1 else step
     # Check obstacles or go to next point in path
@@ -55,7 +55,7 @@ while step < len(pointsx):
     # Check achieved goals
     achieved = achieved + 1 if pc.distance2p(pos, goals[achieved]) <= 0.3 else achieved
     print(achieved)
-    # If an obstacle was avoided, replan the path
+    # If an obstacle was avoided, replan the path. Only works when there are more than 3 goals left
     if avoid:
         path  = pc.splinePath(p[:,0][achieved:], p[:,1][achieved:]) # New path of remaining points
         pointsx = np.linspace(min(p[:,0][achieved:]), max(p[:,0][achieved:]), num=(60 - step), endpoint=True)

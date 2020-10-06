@@ -86,6 +86,9 @@ def continuosControl(clientID, robot, goal):
     return errp, ul, ur, pos, rot
 
 def distance2p(a, b):
+    """
+    Returns the distance between 2 given points in R2
+    """
     d = m.sqrt((a[0]-b[0])**2 + (a[1]-b[1])**2)
     return d
 
