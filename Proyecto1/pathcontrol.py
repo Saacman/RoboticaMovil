@@ -38,7 +38,7 @@ def braitenberg(clientID, usensor):
     dR = np.sum(braitenbergR * detectW)
     vLeft = v0 + dL
     vRight = v0 + dR
-    avoid = True if (dL + dR) else False
+    avoid = True if (abs(dL) + abs(dR)) else False
     return avoid, vLeft, vRight
 
 def transfB2A(rotAngle, B_ACoords):
@@ -83,7 +83,11 @@ def continuosControl(clientID, robot, goal):
     omega = Kh*errh
     ul = v/r - L*omega/(2*r)
     ur = v/r + L*omega/(2*r)
-    return errp, ul, ur
+    return errp, ul, ur, pos, rot
+
+def distance2p(a, b):
+    d = m.sqrt((a[0]-b[0])**2 + (a[1]-b[1])**2)
+    return d
 
 if __name__ == "__main__":
     np.random.seed(234)
