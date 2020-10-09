@@ -1,3 +1,7 @@
+"""
+Proyecto 1: Navegación reactiva con seguimiento de trayectoria
+Funciones utilizadas
+"""
 from scipy.interpolate import interp1d
 import numpy as np
 import time
@@ -7,7 +11,7 @@ import sim as vrep
 #<---------------------------------Braitenberg--------------------------------------->
 
 noDetectDist = 0.5
-maxDist = 0.2
+maxDist = 0.3
 detectW = np.zeros(16)
 braitenbergL = np.array([-0.2,-0.4,-0.6,-0.8,-1,-1.2,-1.4,-1.6, 0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0])
 braitenbergR = np.array([-1.6,-1.4,-1.2,-1,-0.8,-0.6,-0.4,-0.2, 0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0])
@@ -26,7 +30,7 @@ def braitenberg(clientID, usensor):
     Braitenberg algorithm for the front sensors of the pioneer 3dx
     """
     for i in range(len(usensor)):
-        err, state, point, detectedObj, detectedSurfNormVec = vrep.simxReadProximitySensor(clientID, usensor[i], vrep.simx_opmode_buffer)
+        err, state, point, detectedObj, detectedSurfNormVec = vrep.simxReadProximitySensor(clientID, usensor[i], vrep.simx_opmode_oneshot)
         distance = np.linalg.norm(point)
         # if a detection occurs
         if state and (distance < noDetectDist): # don't care about distant objects
@@ -54,7 +58,14 @@ def splinePath(x, y):
     """
     Generate a function of the path that matches the goals
     """
-    f = interp1d(x, y, kind='cubic')
+    n = x.size
+    if n >= 4:
+        k = 'cubic'
+    elif n == 3:
+        k = 'quadratic'
+    else:
+        k = 'linear'
+    f = interp1d(x, y, kind=k)
     return f
 
 def angdiff(t1, t2):
@@ -73,8 +84,8 @@ def continuosControl(clientID, robot, goal):
     """
     xd = goal[0]
     yd = goal[1]
-    ret, pos = vrep.simxGetObjectPosition(clientID, robot, -1, vrep.simx_opmode_blocking)
-    ret, rot = vrep.simxGetObjectOrientation(clientID, robot, -1, vrep.simx_opmode_blocking)
+    ret, pos = vrep.simxGetObjectPosition(clientID, robot, -1, vrep.simx_opmode_oneshot)
+    ret, rot = vrep.simxGetObjectOrientation(clientID, robot, -1, vrep.simx_opmode_oneshot)
 
     errp = m.sqrt((xd-pos[0])**2 + (yd-pos[1])**2)
     angd = m.atan2(yd-pos[1], xd-pos[0])
@@ -93,6 +104,9 @@ def distance2p(a, b):
     return d
 
 if __name__ == "__main__":
+    # Irrelevant code
+
+    
     np.random.seed(234)
     #rng = np.random.default_rng()
     xx = np.array([0, 1, 2, 3, 7, 9, 10, 11, 14, 17, 19])
@@ -127,3 +141,5 @@ if __name__ == "__main__":
     plt.plot(np.array([0,2]), np.array([0,4]), 'o', xnew,g(xnew))
     plt.show()
     print(new)
+    # plt.plot(p[:,0], p[:,1], "o", pointsx, pointsy, "-")
+    # plt.show()

@@ -1,10 +1,13 @@
+"""
+Proyecto 1: Navegación reactiva con seguimiento de trayectoria
+Programa principal
+"""
 import numpy as np
 import time
 import math as m
 import sys
 import sim as vrep # access all the VREP elements
 import pathcontrol as pc
-import matplotlib.pyplot as plt
 
 #<---------------------------------Initialization--------------------------------------->
 vrep.simxFinish(-1) # just in case, close all opened connections
@@ -33,30 +36,33 @@ for i in range(16):
 
 
 #<-----------------------------------Control----------------------------------------->
-goals = [(-6.0,  0.5), (-5.5, -3.5), (-4.5, 1.5), (-0.5, -6.5), (1.5, -4.5), (2.5, -0.5), (3.5, -1.5), (6.5, -4.5)]#, (9.5, -5.5)] #(11.5, -4.5)
+goals = [(-6.0,  0.5), (-5.5, -3.5), (-4.5, 1.5), (-3.0, 3.5), (-1.5, -5.0), (-0.5, -6.5), (1.5, -4.5), (2.5, -0.5), (3.5, -1.5), (6.5, -4.5)]
 p = np.array(goals)
 path = pc.splinePath(p[:,0], p[:,1])
 pointsx = np.linspace(min(p[:,0]), max(p[:,0]), num=60, endpoint=True)
 pointsy = path(pointsx)
-plt.plot(p[:,0], p[:,1], "o", pointsx, pointsy, "-")
-plt.show()
+
 step = 0
 errp = 10
 achieved = 0
+avoid = False
+
 while step < len(pointsx) and achieved < len(goals):
+    prev = avoid
     # Traverse the path
     step = step + 1 if errp < 0.1 else step
     # Check obstacles or go to next point in path
     avoid, ulb, urb = pc.braitenberg(clientID, usensor)
     errp, ulc, urc, pos, rot = pc.continuosControl(clientID, robot, (pointsx[step], pointsy[step]))
+
     ul = ulb if avoid else ulc
     ur = urb if avoid else urc
-
+    
     # Check achieved goals
     achieved = achieved + 1 if pc.distance2p(pos, goals[achieved]) <= 0.3 else achieved
-    print(achieved)
-    # If an obstacle was avoided, replan the path. Only works when there are more than 3 goals left
-    if avoid:
+
+    # If an obstacle was avoided, replan the path. Only works when there are more than 2 goals left
+    if prev and not avoid:
         path  = pc.splinePath(p[:,0][achieved:], p[:,1][achieved:]) # New path of remaining points
         pointsx = np.linspace(min(p[:,0][achieved:]), max(p[:,0][achieved:]), num=(60 - step), endpoint=True)
         pointsy = path(pointsx)
