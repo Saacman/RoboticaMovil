@@ -1,11 +1,26 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import pathcontrol as pc
-goals = [(-6.5,  0.5), (-5.5, -3.5), (-4.5, 1.5), (-0.5, -6.5), (1.5, -4.5),
-(2.5, -0.5), (3.5, -1.5), (6.5, -4.5), (9.5, -7.5), (11.5, -4.5)]
-goals = [(-6.0,  0.5), (-5.5, -3.5), (-4.5, 1.5), (-0.5, -6.5), (1.5, -4.5), (2.5, -0.5), (3.5, -1.5), (6.5, -4.5), (9.5, -5.5), (11.5, -4.5)]
-p = np.array(goals)
-path = pc.splinePath(p[:,0], p[:,1])
-points = np.linspace(min(p[:,0]), max(p[:,0]), num=100, endpoint=True)
-plt.plot(p[:,0], p[:,1], "o", points, path(points), "-")
-plt.show()
+import time
+
+
+# ul = 4
+# ur = 4
+# lgains = np.linspace(0,-1,8)
+# arr = np.array([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16])
+startpy = time.time()
+o = 0
+for i in range (1000000):
+    o = o +1
+# v1 = ul + sum(lgains * (1 - arr[:8]))
+# v2 = ul + sum(lgains * (1 - arr[:8]))
+endpy = time.time()
+# print(endpy-startpy)
+# startpy = time.time()
+# for i in range(8):
+#     ul = ul + lgains[i]*(1 - arr[i])
+#     ur = ur + lgains[i]*(1 - arr[i])
+# endpy = time.time()
+print(endpy-startpy)
+
+
