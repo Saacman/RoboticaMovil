@@ -1,6 +1,5 @@
 """
-Proyecto 1: Navegación reactiva con seguimiento de trayectoria
-Programa principal
+Proyecto 2: Mapas de ocupación
 """
 import matplotlib.pyplot as plt
 import numpy as np
@@ -40,27 +39,21 @@ for i in range(16):
     err, state, point, detectedObj, detectedSurfNormVec = vrep.simxReadProximitySensor(
         clientID, usensor[i], vrep.simx_opmode_streaming)
 
-x = []
-y = []
 
-# <-----------------------------------Control----------------------------------------->
+
 # Initialize the map
-err, pos0 = vrep.simxGetObjectPosition(
-    clientID, robot, -1, vrep.simx_opmode_blocking)
+err, pos0 = vrep.simxGetObjectPosition(clientID, robot, -1, vrep.simx_opmode_blocking)
 pos0 = np.array(pos0)
-#map = GridMap(pos0)
+mp = GridMap()
 csize = 0.1  # 10 cm
 t = time.time()
-x = []
-y = []
-mapita = np.ones((100,100))
-while time.time()-t < 60:
+
+while time.time()-t < 120:
     err, carpos = vrep.simxGetObjectPosition(
         clientID, robot, -1, vrep.simx_opmode_oneshot_wait)
     carpos = np.array(carpos)
     gpos = ((carpos - pos0) / csize).astype(int)
-    mapita[gpos[1], gpos[0]] = 0
-    # Agregar como vacio
+    #mp.setPoint(gpos, 0)
     for i in range(len(usensor)):
         err, state, point, detectedObj, detectedSurfNormVec = vrep.simxReadProximitySensor(
             clientID, usensor[i], vrep.simx_opmode_oneshot_wait)
@@ -68,21 +61,34 @@ while time.time()-t < 60:
             clientID, usensor[i], -1, vrep.simx_opmode_oneshot_wait)
         sensor_orien = vrep.simxGetObjectOrientation(
             clientID, usensor[i], -1, vrep.simx_opmode_oneshot_wait)
-        # if a detection occurs
+        
         if state:
             global_pos = transformB2A(sensor_orien[1], sensor_pos[1], np.array(point))
-            grid_pos = ((global_pos - pos0) / csize).astype(int)  # Agregar al mapa
-            #tocc[yo-1, xo-1] = 1
-            mapita[grid_pos[1], grid_pos[0]] = 3
+            grid_pos = ((global_pos - pos0) / csize).astype(int) 
+            mp.setPoint(grid_pos, 1)
+            rr, cc = line(gpos[1], gpos[0], grid_pos[1], grid_pos[0])
+            rr = rr + mp.coffset[1]
+            cc = cc + mp.coffset[0]
+            mp.grid[rr[:-2],cc[:-2]] = 0
+            
         else:
-            global_pos = transformB2A(
-                sensor_orien[1], sensor_pos[1], np.array([0, 0, 1]))
-            grid_pos = global_pos/csize - pos0 - 1
-        #rows, cols = line(gpos[1], gpos[0], grid_pos[1], grid_pos[0])
-        #occgrid[rows, cols] = 0
-
+            global_pos = transformB2A(sensor_orien[1], sensor_pos[1], np.array([0, 0, 1]))
+            grid_pos = ((global_pos - pos0) / csize).astype(int) 
+            mp.setPoint(grid_pos, 0)
+            rr, cc = line(gpos[1], gpos[0], grid_pos[1], grid_pos[0])
+            rr = rr + mp.coffset[1]
+            cc = cc + mp.coffset[0]
+            mp.grid[rr[:-2],cc[:-2]] = 0
+            
 
 # The End
 vrep.simxStopSimulation(clientID, vrep.simx_opmode_oneshot)
-plt.imshow(np.flipud(mapita))
+final = mp.getGrid()
+from PIL import Image
+from matplotlib import cm
+im = Image.fromarray(np.uint8(final * 255), 'L')
+im.show()
+im.save("mapa.png", "PNG")
+mp.saveGrid2File()
+plt.imshow(final)
 plt.show()
