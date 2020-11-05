@@ -84,11 +84,11 @@ while time.time()-t < 120:
 # The End
 vrep.simxStopSimulation(clientID, vrep.simx_opmode_oneshot)
 final = mp.getGrid()
-from PIL import Image
-from matplotlib import cm
-im = Image.fromarray(np.uint8(final * 255), 'L')
-im.show()
-im.save("mapa.png", "PNG")
-mp.saveGrid2File()
+mp.saveImg("prueba.png")
 plt.imshow(final)
+plt.show()
+
+test = GridMap.load("prueba.png")
+plt.imshow(test.getGrid())
+print(f"{test.coffset} y {mp.coffset}")
 plt.show()

@@ -1,5 +1,5 @@
 import numpy as np
-import os
+from PIL import Image
 def rotx(theta):
     Rx = np.array([[1,0,0],[0,np.cos(theta),-np.sin(theta)],[0,np.sin(theta),np.cos(theta)]])
     return Rx
@@ -13,6 +13,10 @@ def rotz(theta):
     return Rz
 
 def transformB2A(euler, trans, pos_b):
+    """
+    Transform point from system B to A given
+    the translation and rotation angles
+    """
     alpha = euler[0]
     beta = euler[1]
     gamma = euler[2]
@@ -21,13 +25,43 @@ def transformB2A(euler, trans, pos_b):
     return (rotated + np.array(trans).reshape(3,1)).reshape(3)
 
 
-class GridMap: 
-    def __init__(self):
-        self.coffset = np.array([0,0])
-        self.grid = np.ones((10,10)) * 0.5
-        self.path = 'map.txt'
+class GridMap:
+    def __init__(self, center=np.array([0,0]), arr = np.ones((10,10)) * 0.5):
+        self.coffset = center
+        self.grid = arr
+        
+    @classmethod
+    def loadImg(cls, path):
+        """
+        Read information from an image
+        """
+        img = Image.open(path)
+        arr = np.array(img).astype(np.float) / 255
+        arr = np.flipud(np.around(arr, 1))
+        if 0.8 in arr:
+            r = np.where(arr == 0.8)
+            center = np.array([r[1][0], r[0][0]])
+            arr[center[1], center[0]] = 0
+        else:
+            center = np.array((0,0))
+        obj = cls(center, arr)
+        return obj
+
+    def saveImg(self, path):
+        """
+        Save information as an image
+        """
+        arr = self.grid
+        arr[self.coffset[1], self.coffset[0]] = 0.8
+        arr = np.flipud(arr)        
+        img = Image.fromarray(np.uint8(arr * 255), 'L')
+        img.save(path, "PNG")
+
         
     def setPoint(self, point, value):
+        """
+        Save the given value at the equivalent position in the array
+        """
         point = point[:2]
         p = point + self.coffset
         # Add columns to the left, if needed
@@ -62,7 +96,13 @@ class GridMap:
         self.grid[p[1], p[0]] = value
             
     def getGrid(self):
+        """
+        Give a view of the saved array ready for display
+        """
         return np.flipud(self.grid)
 
-    def saveGrid2File(self):
-        np.savetxt(self.path, self.grid)
+    def saveGrid2File(self, path):
+        """
+        Save information as text, with no center info
+        """
+        np.savetxt(path, self.grid)
