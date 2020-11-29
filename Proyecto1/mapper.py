@@ -48,7 +48,7 @@ mp = GridMap()
 csize = 0.1  # 10 cm
 t = time.time()
 
-while time.time()-t < 120:
+while time.time()-t < 20:
     err, carpos = vrep.simxGetObjectPosition(
         clientID, robot, -1, vrep.simx_opmode_oneshot_wait)
     carpos = np.array(carpos)
@@ -64,11 +64,13 @@ while time.time()-t < 120:
         
         if state:
             global_pos = transformB2A(sensor_orien[1], sensor_pos[1], np.array(point))
-            grid_pos = ((global_pos - pos0) / csize).astype(int) 
+            grid_pos = ((global_pos - pos0) / csize).astype(int)
+            # Añadir el punto detectado
             mp.setPoint(grid_pos, 1)
             rr, cc = line(gpos[1], gpos[0], grid_pos[1], grid_pos[0])
             rr = rr + mp.coffset[1]
             cc = cc + mp.coffset[0]
+            # Añadir los puntos entre la posición y el detectado
             mp.grid[rr[:-2],cc[:-2]] = 0
             
         else:
@@ -84,11 +86,11 @@ while time.time()-t < 120:
 # The End
 vrep.simxStopSimulation(clientID, vrep.simx_opmode_oneshot)
 final = mp.getGrid()
-mp.saveImg("prueba.png")
+mp.saveImg("1min.png")
 plt.imshow(final)
 plt.show()
 
-test = GridMap.load("prueba.png")
+test = GridMap.loadImg("1min.png")
 plt.imshow(test.getGrid())
 print(f"{test.coffset} y {mp.coffset}")
 plt.show()
