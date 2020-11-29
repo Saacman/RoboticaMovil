@@ -9,6 +9,7 @@ import sys
 import sim as vrep  # access all the VREP elements
 from mapping import transformB2A, GridMap
 from skimage.draw import line
+import os 
 # <---------------------------------Initialization--------------------------------------->
 vrep.simxFinish(-1)  # just in case, close all opened connections
 clientID = vrep.simxStart('127.0.0.1', -1, True, True,
@@ -40,15 +41,25 @@ for i in range(16):
         clientID, usensor[i], vrep.simx_opmode_streaming)
 
 
-
 # Initialize the map
 err, pos0 = vrep.simxGetObjectPosition(clientID, robot, -1, vrep.simx_opmode_blocking)
 pos0 = np.array(pos0)
-mp = GridMap()
 csize = 0.1  # 10 cm
-t = time.time()
 
-while time.time()-t < 20:
+# Don't move the robot (TODO: save the initial position in the grid object, 
+# translate the coords in setPoint)
+
+if os.path.exists('map.png'):
+    print("Loading map...")
+    mp = GridMap.loadImg("map.png")
+    #plt.imshow(test.getGrid())
+    #print(f"{test.coffset} y {mp.coffset}")
+    #plt.show()
+else:
+    mp = GridMap()
+    
+t = time.time()
+while time.time()-t < 60:
     err, carpos = vrep.simxGetObjectPosition(
         clientID, robot, -1, vrep.simx_opmode_oneshot_wait)
     carpos = np.array(carpos)
@@ -86,11 +97,7 @@ while time.time()-t < 20:
 # The End
 vrep.simxStopSimulation(clientID, vrep.simx_opmode_oneshot)
 final = mp.getGrid()
-mp.saveImg("1min.png")
+mp.saveImg("map.png")
 plt.imshow(final)
 plt.show()
 
-test = GridMap.loadImg("1min.png")
-plt.imshow(test.getGrid())
-print(f"{test.coffset} y {mp.coffset}")
-plt.show()
