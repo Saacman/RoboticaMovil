@@ -52,9 +52,6 @@ csize = 0.1  # 10 cm
 if os.path.exists('map.png'):
     print("Loading map...")
     mp = GridMap.loadImg("map.png")
-    #plt.imshow(test.getGrid())
-    #print(f"{test.coffset} y {mp.coffset}")
-    #plt.show()
 else:
     mp = GridMap()
     
