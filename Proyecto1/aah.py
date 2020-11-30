@@ -15,25 +15,31 @@ import os
 
 # Load the grid
 occmap = GridMap.loadImg("rescue.png")
-print(occmap.coffset)
-print(occmap.ipos)
-print(occmap.tsize)
 grid = np.array(occmap.grid, copy=True)
+
 # Dilate the obs
 bin_grid = np.int8(grid > 0.5)
-disk = selem.disk(3)
+
+disk = selem.disk(4)
 obstacles = binary_dilation(bin_grid, disk)
 
-#start = (21, 70)
-#end = (93, 11)
+start = (20, 70)
+end = (90, 30)
 
-#path = astar(obstacles, start, end, allow_diagonal_movement=True)
-#path = np.array(path)
+path = astar(obstacles, start, end, allow_diagonal_movement=True)
+path = np.array(path)
 
+print(path)
+trans_path = np.empty_like(path).astype(float)
+offset = occmap.coffset[::-1]
+for i in range(len(path)):
+    trans_path[i,:] = (path[i,:] - offset) * occmap.tsize - occmap.ipos
 
-#grid[path[:,0], path[:,1]] = 0.8
-#plt.imshow(np.flipud(grid))
-#plt.show()
+print(trans_path)
+
+grid[path[:,0], path[:,1]] = 0.8
+plt.imshow(np.flipud(grid))
+plt.show()
 
 """
 
