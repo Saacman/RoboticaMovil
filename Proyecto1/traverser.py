@@ -10,7 +10,7 @@ import pathcontrol as pc
 from skimage.draw import line
 from skimage.morphology import selem, binary_dilation
 import os 
-
+"""
 #<---------------------------------Initialization--------------------------------------->
 vrep.simxFinish(-1) # just in case, close all opened connections
 clientID=vrep.simxStart('127.0.0.1',-1,True,True,5000,5) # start a connection
@@ -35,42 +35,49 @@ for i in range(1,17):
 for i in range(16):
     err, state, point, detectedObj, detectedSurfNormVec = vrep.simxReadProximitySensor(
         clientID, usensor[i], vrep.simx_opmode_streaming)
-
+"""
 #<----------------------------------A* Algorithm---------------------------------------->
+
 # Load the grid, and make it thicc
-theMap = GridMap.loadImg("map_v2.png")
+theMap = GridMap.loadImg("map.png")
 grid = theMap.getGrid()
-plt.imshow(grid)
-plt.show()
 
 bin_grid = np.int8(grid > 0.5)
 disk = selem.disk(3)
 bin_grid = binary_dilation(bin_grid, disk)
-plt.imshow(bin_grid)
-plt.show()
 
-start = (89,70) #Initial pos (y,x)
-end = (17, 11)
+#err, pos0 = vrep.simxGetObjectPosition(clientID, robot, -1, vrep.simx_opmode_blocking)
+pos0 = [ 1.10356879, -3.55007982]
+pos0 = ((pos0 - theMap.ipos) / theMap.tsize).astype(int) + theMap.coffset
+pos0[1] = -pos0[1] + 110
+start = (70,89)
+print((70-60)*0.1+pos0[0])
+print((89-20)*0.1+pos0[1])
+end = (11, 17)
 path = astar(bin_grid, start, end, allow_diagonal_movement=True)
 path = np.array(path)
-grid[path[:,0], path[:,1]] = 0.5
-
+grid[path[:,1], path[:,0]] = 0.5
 plt.imshow(grid)
 plt.show()
-
+print(theMap.coffset)
 #<-----------------------------------Control----------------------------------------->
+path = path.astype(float)
+path[:,1] = -path[:,1] + len(grid)
+for i in range(len(path)):
+    path[i,:] = (path[i,:] - theMap.coffset) * theMap.tsize + theMap.ipos
 
-pointsx = path_transformed[:,0]
-pointsy = path_transformed[:,1]
+
+"""
+pointsx = path[:,0]
+pointsy = path[:,1]
 
 step = 0
 errp = 10
-achieved = 0
 avoid = False
 
 while step < len(pointsx):
     # Traverse the path
-    step = step + 1 if errp < 0.1 else step
+    step = step + 2 if errp < 0.2 else step
     # Check obstacles or go to next point in path
     avoid, ulb, urb = pc.braitenberg(clientID, usensor)
     errp, ulc, urc, pos, rot = pc.continuosControl(clientID, robot, (pointsx[step], pointsy[step]))
@@ -82,6 +89,6 @@ while step < len(pointsx):
     errf = vrep.simxSetJointTargetVelocity(clientID, motorL, ul, vrep.simx_opmode_streaming)
     errf = vrep.simxSetJointTargetVelocity(clientID, motorR, ur, vrep.simx_opmode_streaming)
 
-
-# The End
+#The End
 vrep.simxStopSimulation(clientID, vrep.simx_opmode_oneshot)
+"""

@@ -1,5 +1,6 @@
 import numpy as np
 from PIL import Image
+from PIL.PngImagePlugin import PngInfo
 def rotx(theta):
     Rx = np.array([[1,0,0],[0,np.cos(theta),-np.sin(theta)],[0,np.sin(theta),np.cos(theta)]])
     return Rx
@@ -26,16 +27,25 @@ def transformB2A(euler, trans, pos_b):
 
 
 class GridMap:
-    def __init__(self, center=np.array([0,0]), arr = np.ones((10,10)) * 0.5):
+    def __init__(self, init_pos, center=np.array([0,0]), arr = np.ones((10,10)) * 0.5, tile_size = 0.1):
         self.coffset = center
         self.grid = arr
+        self.tsize = tile_size
+        self.ipos = init_pos
         
     @classmethod
-    def loadImg(cls, path):
+    def loadImg(cls, path, tsize = 0.1):
         """
         Read information from an image
         """
         img = Image.open(path)
+
+        if img.info:
+            tsize=float(img.info["tsize"])
+            ipos = np.array([float(img.info["iposx"]), float(img.info["iposy"])])
+        else:
+            ipos = np.zeros(2)
+
         arr = np.array(img).astype(np.float) / 255
         arr = np.flipud(np.around(arr, 1))
         if 0.8 in arr:
@@ -44,7 +54,7 @@ class GridMap:
             arr[center[1], center[0]] = 0
         else:
             center = np.array((0,0))
-        obj = cls(center, arr)
+        obj = cls(ipos, center, arr, tsize)
         return obj
 
     def saveImg(self, path):
@@ -53,9 +63,14 @@ class GridMap:
         """
         arr = self.grid
         arr[self.coffset[1], self.coffset[0]] = 0.8
+        # Save map info
+        meta = PngInfo()
+        meta.add_text("iposx", str(self.ipos[0]))
+        meta.add_text("iposy", str(self.ipos[1]))
+        meta.add_text("tsize", str(self.tsize))
         arr = np.flipud(arr)        
         img = Image.fromarray(np.uint8(arr * 255), 'L')
-        img.save(path, "PNG")
+        img.save(path, "PNG", pnginfo=meta)
 
         
     def setPoint(self, point, value):
@@ -100,9 +115,3 @@ class GridMap:
         Give a view of the saved array ready for display
         """
         return np.flipud(self.grid)
-
-    def saveGrid2File(self, path):
-        """
-        Save information as text, with no center info
-        """
-        np.savetxt(path, self.grid)

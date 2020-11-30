@@ -44,23 +44,23 @@ for i in range(16):
 # Initialize the map
 err, pos0 = vrep.simxGetObjectPosition(clientID, robot, -1, vrep.simx_opmode_blocking)
 pos0 = np.array(pos0)
-csize = 0.1  # 10 cm
+#csize = 0.1  # 10 cm
 
-# Don't move the robot (TODO: save the initial position in the grid object, 
-# translate the coords in setPoint)
-
-if os.path.exists('map.png'):
+# TODO: translate the coords in setPoint
+img = "rescue.png"
+if os.path.exists(img):
     print("Loading map...")
-    mp = GridMap.loadImg("map.png")
+    mp = GridMap.loadImg(img)
 else:
-    mp = GridMap()
+    print("Creating map...")
+    mp = GridMap(init_pos = pos0[:2])
     
 t = time.time()
 while time.time()-t < 60:
     err, carpos = vrep.simxGetObjectPosition(
         clientID, robot, -1, vrep.simx_opmode_oneshot_wait)
     carpos = np.array(carpos)
-    gpos = ((carpos - pos0) / csize).astype(int)
+    gpos = ((carpos - pos0) / mp.tsize).astype(int)
     #mp.setPoint(gpos, 0)
     for i in range(len(usensor)):
         err, state, point, detectedObj, detectedSurfNormVec = vrep.simxReadProximitySensor(
@@ -72,7 +72,7 @@ while time.time()-t < 60:
         
         if state:
             global_pos = transformB2A(sensor_orien[1], sensor_pos[1], np.array(point))
-            grid_pos = ((global_pos - pos0) / csize).astype(int)
+            grid_pos = ((global_pos - pos0) / mp.tsize).astype(int)
             # Añadir el punto detectado
             mp.setPoint(grid_pos, 1)
             rr, cc = line(gpos[1], gpos[0], grid_pos[1], grid_pos[0])
@@ -83,7 +83,7 @@ while time.time()-t < 60:
             
         else:
             global_pos = transformB2A(sensor_orien[1], sensor_pos[1], np.array([0, 0, 1]))
-            grid_pos = ((global_pos - pos0) / csize).astype(int) 
+            grid_pos = ((global_pos - pos0) / mp.tsize).astype(int) 
             mp.setPoint(grid_pos, 0)
             rr, cc = line(gpos[1], gpos[0], grid_pos[1], grid_pos[0])
             rr = rr + mp.coffset[1]
@@ -94,7 +94,9 @@ while time.time()-t < 60:
 # The End
 vrep.simxStopSimulation(clientID, vrep.simx_opmode_oneshot)
 final = mp.getGrid()
-mp.saveImg("map.png")
+mp.saveImg("rescue.png")
 plt.imshow(final)
 plt.show()
+print(mp.ipos)
+print(mp.coffset)
 

@@ -15,7 +15,7 @@ maxDist = 0.3
 detectW = np.zeros(16)
 braitenbergL = np.array([-0.2,-0.4,-0.6,-0.8,-1,-1.2,-1.4,-1.6, 0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0])
 braitenbergR = np.array([-1.6,-1.4,-1.2,-1,-0.8,-0.6,-0.4,-0.2, 0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0])
-v0 = 4
+v0 = 2
 #<-----------------------------------Control----------------------------------------->
 # Controller gains (linear and heading)
 Kv = 0.5
@@ -110,8 +110,7 @@ if __name__ == "__main__":
     np.random.seed(234)
     #rng = np.random.default_rng()
     xx = np.array([0, 1, 2, 3, 7, 9, 10, 11, 14, 17, 19])
-    #xx = np.sort(np.random.randint(1, 15, 10))
-    #yy = np.random.randint(0, 15, 10)
+
     yy = np.array([0, 8, 4, 9, 1, 3, 7, 6, 3, 0, 3])
     func = splinePath(xx, yy)
     xnew = np.linspace(0, max(xx), num=100, endpoint=True)
@@ -141,5 +140,3 @@ if __name__ == "__main__":
     plt.plot(np.array([0,2]), np.array([0,4]), 'o', xnew,g(xnew))
     plt.show()
     print(new)
-    # plt.plot(p[:,0], p[:,1], "o", pointsx, pointsy, "-")
-    # plt.show()
