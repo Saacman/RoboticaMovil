@@ -2,10 +2,6 @@ import numpy as np
 import pickle
 import matplotlib.pyplot as plt
 
-pkl_file = open('inflated.pkl', 'rb')
-grid = pickle.load(pkl_file)
-pkl_file.close()
-
 #          x, y, z
 delta = [[-1, 0, 0], # back
          [ 0,-1, 0], # left
@@ -14,12 +10,28 @@ delta = [[-1, 0, 0], # back
          [ 0, 0,-1], # down
          [ 0, 0, 1]] # up
 cost = 1
-xdim=grid.shape[0]
-ydim=grid.shape[1]
-zdim=grid.shape[2]
-heuristic = np.zeros((xdim,ydim,zdim), dtype=np.float32)
+
+
+def getHeuristic(grid,goal):
+    xdim=grid.shape[0]
+    ydim=grid.shape[1]
+    zdim=grid.shape[2]
+    heuristic = np.zeros((xdim,ydim,zdim), dtype=np.float32)
+    for z in range(zdim):
+        for y in range(ydim):
+            for x in range(xdim):
+                # Euclidean Distance
+                dist=((x-goal[0])**2+(y-goal[1])**2+(z-goal[2])**2)**(1/2.0)
+                yheu = np.abs(float(y) - goal[1])
+                heuristic[x,y,z]= dist + yheu
+
+    return heuristic
+
 
 def search(init, goal, grid, heuristic, maxp):
+    xdim=grid.shape[0]
+    ydim=grid.shape[1]
+    zdim=grid.shape[2]
     x = init[0]
     y = init[1]
     z = init[2]
@@ -75,14 +87,12 @@ def search(init, goal, grid, heuristic, maxp):
                                 f2 = g2 + heuristic[x2,y2,z2]
                                 openl.append([f2, g2, x2, y2, z2])
                                 closed[x2,y2,z2] = 1
-                                
                                 # Memorize the sucessfull action for path planning
                                 action[x2,y2,z2] = i
                     else:
                         pass
 
     path=[]
-
     path.append([goal[0], goal[1], goal[2]])
     
     while x != init[0] or y != init[1] or z != init[2]:
@@ -97,52 +107,5 @@ def search(init, goal, grid, heuristic, maxp):
         path.append([x2, y2, z2])
 
     path.reverse()
-
     return path
 
-# Heuristic berechnen
-def calcheuristic(grid,goal):
-    xdim=grid.shape[0]
-    ydim=grid.shape[1]
-    zdim=grid.shape[2]
-    for z in range(zdim):
-        for y in range(ydim):
-            for x in range(xdim):
-                # Euclidean Distance
-                dist=((x-goal[0])**2+(y-goal[1])**2+(z-goal[2])**2)**(1/2.0)
-                yheu = np.abs(float(y) - goal[1])
-                heuristic[x,y,z]= dist + yheu
-
-    return heuristic
-
-
-start = [35,5,5]
-goal = [5,35,20]
-
-
-heuristic = calcheuristic(grid,goal)
-
-
-maxp = 4.0
-
-path=search(start, goal, grid, heuristic, maxp)
-
-
-
-bingrid = grid > 0
-fig = plt.figure()
-ax = fig.gca(projection='3d')
-ax.voxels(bingrid)
-plt.show()
-
-path = np.array(path)
-grid[path[:,0], path[:,1], path[:,2]] = 1
-colors = np.empty(grid.shape, dtype=object)
-colors[bingrid] = 'blue'
-colors[path[:,0], path[:,1], path[:,2]] = 'green'
-
-bingrid = grid > 0
-fig = plt.figure()
-ax = fig.gca(projection='3d')
-ax.voxels(bingrid, facecolors=colors)
-plt.show()
