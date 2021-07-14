@@ -1,4 +1,19 @@
+"""
+Saúl Isaac Sánchez Flores
 
+Actividad 6: Control de un Robot Móvil
+Modifique el programa pioneersetpt.py del repositorio para
+causar que el robot Pioneer 3dx se mueva a varios puntos
+de destino, de manera que su ruta total se parezca a un cuadrado.
+
+    1.Haga un escenario en CoppeliaSim que solamente
+    contenga al robot Pioneer p3dx en el origen x=0, y=0.
+    2.Guarde en un arreglo las coordenadas (x,y) de las
+    cuatro esquinas de un cuadrado de 3 metros de lado. 
+    3.Mande al robot sucesivamente a cada esquina del
+    cuadrado, usando el controlador de pioneersetpt.py
+
+"""
 import numpy as np
 import time
 import math as m

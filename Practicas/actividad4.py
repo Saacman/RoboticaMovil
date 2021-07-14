@@ -1,21 +1,20 @@
-#Saúl Isaac Sánchez Flores
-# Septiembre 2020
-# Instrucciones: 
-
-# Modifique el programa vreptest.py del repositorio para causar que el robot Pioneer 3dx recorra una
-#  ruta con forma de cuadrado de 2 metros por lado. Esto es, haga que el robot
-# Avance 2 metros.
-# Gire 90 grados.
-# Realizar estos dos movimientos 4 veces causará que el robot trace el cuadrado y quede 
-# aproximadamente con la misma orientación que inició.
-
-# Cuando envíe su actividad, además del archivo de Python .py envíe el escenario de CoppeliaSim 
-# que utilizó (extensión .ttt).
 """
-Demonstration of a Python-CoppeliaSim connection using a Pioneer 3dx simulation
+Saúl Isaac Sánchez Flores
+Septiembre 2020
 
-Author: Juan-Pablo Ramirez-Paredes <jpi.ramirez@ugto.mx>
-Mobile Robotics course, University of Guanajuato (2020)
+Actividad 4: Modelos de robots y simulación
+
+Instrucciones: 
+
+Modifique el programa vreptest.py del repositorio para causar que el robot Pioneer 3dx recorra una
+ ruta con forma de cuadrado de 2 metros por lado. Esto es, haga que el robot
+Avance 2 metros.
+Gire 90 grados.
+Realizar estos dos movimientos 4 veces causará que el robot trace el cuadrado y quede 
+aproximadamente con la misma orientación que inició.
+
+Cuando envíe su actividad, además del archivo de Python .py envíe el escenario de CoppeliaSim 
+que utilizó (extensión .ttt).
 """
 import numpy as np
 import time

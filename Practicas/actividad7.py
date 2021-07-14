@@ -1,14 +1,15 @@
 """
 Saúl Isaac Sánchez Flores
-No pude probar este código correctamente porque mi computadora decidió que hacia mucho calor
-para correr una simulación.
-La idea es tratar de seguir puntos aleatorios generados cada cierto numero de ciclos, 
-ignorando la evasión de obstáculos cuando no es critica.
 
-"""
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
+Actividad 7: Mapas de Rejilla
+Modifique el programa makeoccgrid.py del repositorio, para intentar que la creación del mapa sea:
+(a) más rápida y/o
+(b) más eficiente, es decir, que se cubra mejor el mapa o no queden huecos al avanzar el robot.
+Use como base el escenario obstacles.ttt del repositorio, puede modificar esa escena para cambiar
+el alcance o cobertura de los sensores. En general, se pide que use su creatividad para intentar
+mejorar el programa base.
+
+
 Occupancy grid creation using a Pioneer pd3x with ultrasonic sensors.
 Author: Juan-Pablo Ramirez-Paredes <jpi.ramirez@ugto.mx>
 Mobile Robotics course, University of Guanajuato (2020)
